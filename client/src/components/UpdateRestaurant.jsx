@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import RestaurantsFinder from "../api/RestaurantsFinder";
 
 const UpdateRestaurant = (props) => {
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [priceRange, setPriceRange] = useState("");
+  const history = useHistory();
   //const { restaurants } = useContext(RestaurantsContext);
   const { id } = useParams();
   useEffect(() => {
-    const fetchDat = async () => {
+    const fetchData = async () => {
       try {
         const {
           data: {
@@ -26,8 +27,21 @@ const UpdateRestaurant = (props) => {
         console.log(e);
       }
     };
-    fetchDat();
+    fetchData();
   }, [id]);
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      await RestaurantsFinder.put(`/${id}`, {
+        name,
+        location,
+        price_range: priceRange,
+      });
+      history.push("/");
+    } catch (er) {
+      console.log(er);
+    }
+  };
   return (
     <form action="">
       <div className="form-group">
@@ -60,7 +74,9 @@ const UpdateRestaurant = (props) => {
           className="form-control"
         />
       </div>
-      <button className="btn btn-primary">Submit</button>
+      <button type="submit" onClick={handleUpdate} className="btn btn-primary">
+        Submit
+      </button>
     </form>
   );
 };

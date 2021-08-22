@@ -20,7 +20,8 @@ const RestaurantList = () => {
     }
     fetchData();
   }, [setRestaurants]);
-  const handleDelete = async (id) => {
+  const handleDelete = async (e, id) => {
+    e.stopPropagation();
     try {
       // magic from delete
       await RestaurantsFinder.delete(`/${id}`);
@@ -29,8 +30,12 @@ const RestaurantList = () => {
       console.log(e);
     }
   };
-  const handleUpdate = (id) => {
+  const handleUpdate = (e, id) => {
+    e.stopPropagation();
     history.push(`/restaurants/${id}/update`);
+  };
+  const handleRestaurantSelect = (id) => {
+    history.push(`/restaurants/${id}`);
   };
   return (
     <div className="list-group">
@@ -49,14 +54,17 @@ const RestaurantList = () => {
           {restaurants &&
             restaurants.map((restaurant) => {
               return (
-                <tr key={restaurant.id}>
+                <tr
+                  key={restaurant.id}
+                  onClick={() => handleRestaurantSelect(restaurant.id)}
+                >
                   <td>{restaurant.name}</td>
                   <td>{restaurant.location}</td>
                   <td>{"$".repeat(restaurant.price_range)}</td>
                   <td>Reviews</td>
                   <td>
                     <button
-                      onClick={() => handleUpdate(restaurant.id)}
+                      onClick={(e) => handleUpdate(e, restaurant.id)}
                       className="btn btn-warning"
                     >
                       Update
@@ -64,7 +72,7 @@ const RestaurantList = () => {
                   </td>
                   <td>
                     <button
-                      onClick={() => handleDelete(restaurant.id)}
+                      onClick={(e) => handleDelete(e, restaurant.id)}
                       className="btn btn-danger"
                     >
                       Delete

@@ -19,6 +19,9 @@ const AddRestaurant = () => {
         price_range: priceRange,
       });
       addRestaurants(restaurants);
+      setName("");
+      setLocation("");
+      setPriceRange("");
     } catch (err) {
       console.log(err);
     }
