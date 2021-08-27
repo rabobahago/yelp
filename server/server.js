@@ -3,16 +3,14 @@ const express = require("express");
 const morgan = require("morgan");
 const db = require("./db");
 const cors = require("cors");
+const bcrypt = require("bcrypt");
 const app = express();
+const jwtGenerator = require("./utils/jwtToken");
+const validator = require("./middleware/validinfo");
 app.use(cors());
 app.use(express.json());
 
 app.use(morgan("dev"));
-//middleware
-app.use((req, res, next) => {
-  console.log("middleware run");
-  next();
-});
 
 //get all restaurants
 app.get("/api/v1/restaurants", async (req, res) => {
@@ -127,6 +125,60 @@ app.post("/api/v1/restaurants/:id/addReview", async (req, res) => {
         review: newReview.rows,
       },
     });
+  } catch (err) {
+    console.log(err);
+  }
+});
+app.post("/api/v1/restaurants/register", validator, async (req, res) => {
+  try {
+    // destructure the req.body(user_name, user_password, user_email)
+    const { name, email, password } = req.body;
+    const user = await db.query("select * from users where user_email = $1", [
+      email,
+    ]);
+    // check if the user exists, if the user already exists throw error
+    if (user.rows.length !== 0) {
+      res.status(401).send("user already exists");
+    }
+    // bcrypt user password
+    const saltRound = 10;
+    const salt = await bcrypt.genSalt(saltRound);
+    const bcryptPassword = await bcrypt.hash(password, salt);
+    //enter the new user into our database
+    const newUser = await db.query(
+      "INSERT INTO users (user_name, user_email, user_password) VALUES($1, $2, $3) RETURNING *",
+      [name, email, bcryptPassword]
+    );
+    const token = jwtGenerator(newUser.rows[0].user_id);
+    res.json({ token });
+  } catch (err) {
+    console.log(err);
+  }
+});
+app.post("/api/v1/restaurants/login", validator, async (req, res) => {
+  try {
+    // destructure email, password from body
+
+    const { email, password } = req.body;
+
+    // check if the user exists if not then throw an error
+    const user = await db.query("SELECT * FROM users WHERE user_email=$1", [
+      email,
+    ]);
+    if (user.rows.length === 0) {
+      return res.status(401).json("password or email incorrect");
+    }
+
+    //check if incoming password is same as the database password
+    const validPassword = await bcrypt.compare(
+      password,
+      user.rows[0].user_password
+    );
+    if (!validPassword) {
+      return res.status(401).json("Password or Email is Incorrect");
+    }
+    const token = jwtGenerator(user.rows[0].user_id);
+    res.json({ token });
   } catch (err) {
     console.log(err);
   }
