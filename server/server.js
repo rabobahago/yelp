@@ -7,6 +7,7 @@ const bcrypt = require("bcrypt");
 const app = express();
 const jwtGenerator = require("./utils/jwtToken");
 const validator = require("./middleware/validinfo");
+const authorization = require("./middleware/authorization");
 app.use(cors());
 app.use(express.json());
 
@@ -180,8 +181,35 @@ app.post("/api/v1/restaurants/login", validator, async (req, res) => {
     const token = jwtGenerator(user.rows[0].user_id);
     res.json({ token });
   } catch (err) {
-    console.log(err);
+    console.error(err);
+    res.status(500).send("Server Error");
   }
 });
+app.get("/api/v1/restaurants/auth/verify", authorization, async (req, res) => {
+  try {
+    res.json(true);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server Error");
+  }
+});
+app.get(
+  "/api/v1/restaurants/auth/dashboard",
+  authorization,
+  async (req, res) => {
+    try {
+      // req.user has a payload
+      //res.json(req.user);
+      const user = await db.query(
+        "SELECT user_name FROM users WHERE user_id = $1",
+        [req.user]
+      );
+      res.json(user.rows[0]);
+    } catch (err) {
+      console.error(err);
+      res.status(500).send("Server Error");
+    }
+  }
+);
 const port = process.env.PORT || 3005;
 app.listen(port, () => console.log(`server is listening, port ${port}`));
