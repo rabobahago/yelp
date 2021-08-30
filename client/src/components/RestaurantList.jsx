@@ -14,7 +14,6 @@ const RestaurantList = () => {
             data: { restaurants },
           },
         } = await RestaurantsFinder.get("/");
-        console.log(restaurants);
         setRestaurants(restaurants);
       } catch (e) {
         console.log(e);

@@ -1,30 +1,88 @@
-import Home from "./routes/Home";
-import RestaurantDetailPage from "./routes/RestaurantDetailPage";
-import UpdatePage from "./routes/UpdatePage";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
-import RestaurantsContextProvider from "./context/RestaurantsContext";
-const App = () => {
+import React, { Fragment, useState, useEffect } from "react";
+import {
+  Route,
+  Switch,
+  BrowserRouter as Router,
+  Redirect,
+} from "react-router-dom";
+import Dashboard from "./components/Dashboard";
+import Login from "./components/Login";
+import Register from "./components/Register";
+export const App = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const setAuth = (boolean) => {
+    setIsAuthenticated(boolean);
+  };
+  const isAuth = async () => {
+    try {
+      const response = await fetch("/api/v1/restaurants/auth/verify", {
+        method: "GET",
+        token: localStorage.token,
+      });
+      const parseResponse = response.json();
+      parseResponse === true
+        ? setIsAuthenticated(true)
+        : setIsAuthenticated(false);
+    } catch (e) {
+      console.error(e.message);
+    }
+  };
+  useEffect(() => {
+    isAuth();
+  }, []);
   return (
-    <RestaurantsContextProvider>
-      <div className="container">
-        <Router>
+    <Fragment>
+      <Router>
+        <div className="container">
           <Switch>
-            <Route component={Home} exact path="/" />
             <Route
-              component={UpdatePage}
               exact
-              path="/restaurants/:id/update"
+              path="/"
+              render={(props) =>
+                !isAuthenticated ? (
+                  <Login {...props} setAuth={setAuth} />
+                ) : (
+                  <Redirect to="/login" />
+                )
+              }
             />
             <Route
-              component={RestaurantDetailPage}
               exact
-              path="/restaurants/:id"
+              path="/login"
+              render={(props) =>
+                !isAuthenticated ? (
+                  <Login {...props} setAuth={setAuth} />
+                ) : (
+                  <Redirect to="/dashboard" />
+                )
+              }
+            />
+            <Route
+              exact
+              path="/register"
+              render={(props) =>
+                !isAuthenticated ? (
+                  <Register {...props} setAuth={setAuth} />
+                ) : (
+                  <Redirect to="/dashboard" />
+                )
+              }
+            />
+            <Route
+              exact
+              path="/dashboard"
+              render={(props) =>
+                isAuthenticated ? (
+                  <Dashboard {...props} setAuth={setAuth} />
+                ) : (
+                  <Redirect to="/login" />
+                )
+              }
             />
           </Switch>
-        </Router>
-      </div>
-    </RestaurantsContextProvider>
+        </div>
+      </Router>
+    </Fragment>
   );
 };
-
 export default App;

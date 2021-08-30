@@ -130,7 +130,7 @@ app.post("/api/v1/restaurants/:id/addReview", async (req, res) => {
     console.log(err);
   }
 });
-app.post("/api/v1/restaurants/register", validator, async (req, res) => {
+app.post("/api/v1/restaurants/auth/register", validator, async (req, res) => {
   try {
     // destructure the req.body(user_name, user_password, user_email)
     const { name, email, password } = req.body;
@@ -147,8 +147,8 @@ app.post("/api/v1/restaurants/register", validator, async (req, res) => {
     const bcryptPassword = await bcrypt.hash(password, salt);
     //enter the new user into our database
     const newUser = await db.query(
-      "INSERT INTO users (user_name, user_email, user_password) VALUES($1, $2, $3) RETURNING *",
-      [name, email, bcryptPassword]
+      "INSERT INTO users (user_email, user_password, user_name) VALUES($1, $2, $3) RETURNING *",
+      [email, bcryptPassword, name]
     );
     const token = jwtGenerator(newUser.rows[0].user_id);
     res.json({ token });
@@ -156,41 +156,31 @@ app.post("/api/v1/restaurants/register", validator, async (req, res) => {
     console.log(err);
   }
 });
-app.post("/api/v1/restaurants/login", validator, async (req, res) => {
+app.post("/api/v1/restaurants/auth/login", validator, async (req, res) => {
+  const { email, password } = req.body;
+
   try {
-    // destructure email, password from body
-
-    const { email, password } = req.body;
-
-    // check if the user exists if not then throw an error
-    const user = await db.query("SELECT * FROM users WHERE user_email=$1", [
+    const user = await db.query("SELECT * FROM users WHERE user_email = $1", [
       email,
     ]);
+
     if (user.rows.length === 0) {
-      return res.status(401).json("password or email incorrect");
+      return res.status(401).json("Invalid Credential");
     }
 
-    //check if incoming password is same as the database password
     const validPassword = await bcrypt.compare(
       password,
       user.rows[0].user_password
     );
+
     if (!validPassword) {
-      return res.status(401).json("Password or Email is Incorrect");
+      return res.status(401).json("Invalid Credential");
     }
-    const token = jwtGenerator(user.rows[0].user_id);
-    res.json({ token });
+    const jwtToken = jwtGenerator(user.rows[0].user_id);
+    return res.json({ jwtToken });
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Server Error");
-  }
-});
-app.get("/api/v1/restaurants/auth/verify", authorization, async (req, res) => {
-  try {
-    res.json(true);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Server Error");
+    console.error(err.message);
+    res.status(500).send("Server error");
   }
 });
 app.get(
@@ -198,16 +188,22 @@ app.get(
   authorization,
   async (req, res) => {
     try {
-      // req.user has a payload
-      //res.json(req.user);
       const user = await db.query(
         "SELECT user_name FROM users WHERE user_id = $1",
         [req.user]
       );
+
+      //if would be req.user if you change your payload to this:
+
+      //   function jwtGenerator(user_id) {
+      //   const payload = {
+      //     user: user_id
+      //   };
+
       res.json(user.rows[0]);
     } catch (err) {
-      console.error(err);
-      res.status(500).send("Server Error");
+      console.error(err.message);
+      res.status(500).send("Server error");
     }
   }
 );
