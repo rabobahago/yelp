@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, useHistory, useLocation } from "react-router-dom";
+import { toast } from "react-toastify";
 import RestaurantsFinder from "../api/RestaurantsFinder";
 const AddReviews = () => {
   const [name, setName] = useState("");
@@ -18,6 +19,7 @@ const AddReviews = () => {
       });
       history.push("/");
       history.push(location.pathname);
+      toast.success("Review added successfully");
     } catch (e) {
       console.log(e);
     }

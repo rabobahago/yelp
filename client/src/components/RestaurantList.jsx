@@ -3,6 +3,7 @@ import { useHistory } from "react-router-dom";
 import RestaurantsFinder from "../api/RestaurantsFinder";
 import { RestaurantsContext } from "../context/RestaurantsContext";
 import StarRating from "../components/StarRating";
+import { toast } from "react-toastify";
 const RestaurantList = () => {
   const { restaurants, setRestaurants } = useContext(RestaurantsContext);
   const history = useHistory();
@@ -84,7 +85,10 @@ const RestaurantList = () => {
                   </td>
                   <td>
                     <button
-                      onClick={(e) => handleDelete(e, restaurant.id)}
+                      onClick={(e) => {
+                        handleDelete(e, restaurant.id);
+                        toast.success("restaurant deleted successfully");
+                      }}
                       className="btn btn-danger"
                     >
                       Delete

@@ -1,8 +1,10 @@
 import React, { Fragment, useState } from "react";
+import { useHistory } from "react-router-dom";
+import { toast } from "react-toastify";
 const Login = ({ setAuth }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const history = useHistory();
   const onSubmitForm = async (e) => {
     e.preventDefault();
     try {
@@ -16,11 +18,14 @@ const Login = ({ setAuth }) => {
         }
       );
       const parseResponse = await response.json();
-      if (!parseResponse.jwtToken) {
-        throw new Error("Invalid password or email");
+      if (parseResponse.jwtToken) {
+        localStorage.setItem("token", parseResponse.jwtToken);
+        setAuth(true);
+        toast.success("You have successfully login");
+      } else {
+        setAuth(false);
+        toast.error(parseResponse);
       }
-      localStorage.setItem("token", parseResponse.jwtToken);
-      setAuth(true);
     } catch (e) {
       console.error(e.message);
     }
@@ -47,6 +52,21 @@ const Login = ({ setAuth }) => {
         />
         <button className="btn btn-success btn-block">Submit</button>
       </form>
+
+      <div className=" p-4 mb-4 bg-light">
+        <p>
+          If you don't have Account:{" "}
+          <button
+            className="btn btn-success"
+            onClick={() => {
+              history.push("/register");
+              toast.success("successfully route to sign up");
+            }}
+          >
+            Sign up
+          </button>
+        </p>
+      </div>
     </Fragment>
   );
 };

@@ -5,9 +5,15 @@ import {
   BrowserRouter as Router,
   Redirect,
 } from "react-router-dom";
+import Particles from "react-particles-js";
+
+import { particlesOptions } from "./particles/particles";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Dashboard from "./components/Dashboard";
 import Login from "./components/Login";
 import Register from "./components/Register";
+import "./App.css";
 export const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const setAuth = (boolean) => {
@@ -80,8 +86,10 @@ export const App = () => {
               }
             />
           </Switch>
+          <ToastContainer />
         </div>
       </Router>
+      <Particles params={particlesOptions} className="particles" />
     </Fragment>
   );
 };

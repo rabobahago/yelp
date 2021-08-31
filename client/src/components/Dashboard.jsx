@@ -1,4 +1,5 @@
 import React, { Fragment, useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import AuthCom from "../AuthCom";
 const Dashboard = ({ setAuth }) => {
   const [name, setName] = useState("");
@@ -21,6 +22,7 @@ const Dashboard = ({ setAuth }) => {
     e.preventDefault();
     localStorage.removeItem("token");
     setAuth(false);
+    toast.success("You have successfully logout");
   };
   useEffect(() => {
     getName();

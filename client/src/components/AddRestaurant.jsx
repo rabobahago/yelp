@@ -1,5 +1,6 @@
 import { useState, useContext } from "react";
 import RestaurantsFinder from "../api/RestaurantsFinder";
+import { toast } from "react-toastify";
 import { RestaurantsContext } from "../context/RestaurantsContext";
 const AddRestaurant = () => {
   const [name, setName] = useState("");
@@ -22,6 +23,7 @@ const AddRestaurant = () => {
       setName("");
       setLocation("");
       setPriceRange("");
+      toast.success("restaurant successfully added");
     } catch (err) {
       console.log(err);
     }

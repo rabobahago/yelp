@@ -1,7 +1,10 @@
 import React, { Fragment, useState } from "react";
+import { useHistory } from "react-router-dom";
+import { toast } from "react-toastify";
 const Register = ({ setAuth }) => {
   const [inputs, setInputs] = useState({ email: "", password: "", name: "" });
   const { email, password, name } = inputs;
+  const history = useHistory();
   const onChange = (e) => {
     setInputs({ ...inputs, [e.target.name]: e.target.value });
   };
@@ -18,8 +21,13 @@ const Register = ({ setAuth }) => {
         }
       );
       const parseResponse = await response.json();
-      localStorage.setItem("token", parseResponse.token);
-      setAuth(true);
+      if (parseResponse.token) {
+        localStorage.setItem("token", parseResponse.token);
+        setAuth(true);
+        toast.success("sign up in successfully");
+      } else {
+        toast.error(parseResponse);
+      }
     } catch (e) {
       console.error(e.message);
     }
@@ -54,6 +62,20 @@ const Register = ({ setAuth }) => {
         />
         <button className="btn btn-success btn-block">Submit</button>
       </form>
+      <div className=" p-4 mb-4 bg-light">
+        <p>
+          If you have Account:{" "}
+          <button
+            className="btn btn-success"
+            onClick={() => {
+              history.push("/login");
+              toast.success("successfully route to login");
+            }}
+          >
+            login
+          </button>
+        </p>
+      </div>
     </Fragment>
   );
 };

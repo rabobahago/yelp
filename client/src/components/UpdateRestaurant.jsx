@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import RestaurantsFinder from "../api/RestaurantsFinder";
-
+import { toast } from "react-toastify";
 const UpdateRestaurant = () => {
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
@@ -33,7 +33,8 @@ const UpdateRestaurant = () => {
         location,
         price_range: priceRange,
       });
-      history.push("/");
+      history.push("/dashboard");
+      toast.success("Restaurant updated successfully");
     } catch (er) {
       console.log(er);
     }
